@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>今日奶茶</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;
+  background:
+    radial-gradient(circle at top, #f8f1e3 0%, #f4ecdf 46%, #efe5d8 100%);
+  font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  position:relative
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  background-image:
+    url('dogs/p1.png'),url('dogs/p2.png'),
+    url('dogs/p12.png'),url('dogs/p14.png');
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
+  background-size:100px,130px,110px,120px;
+  background-position:8% 4%,92% 8%,4% 84%,94% 80%;
+  opacity:.09;
+  filter:grayscale(100%) sepia(18%) saturate(88%) contrast(.96);
+  pointer-events:none
+}
+body::after{
+  content:"";
+  position:fixed;inset:0;
+  background:
+    linear-gradient(rgba(255,250,243,.9), rgba(255,250,243,.92)),
+    radial-gradient(circle at 20% 20%, rgba(226,196,150,.16), transparent 32%),
+    radial-gradient(circle at 80% 10%, rgba(196,168,130,.1), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(232,221,213,.3), transparent 30%);
+  pointer-events:none
+}
+.wrap{max-width:400px;width:100%;text-align:center;position:relative;z-index:1}
+
+/* 卡片 */
+.card{
+  background:#fffaf3;border-radius:24px;padding:28px 20px 24px;margin-bottom:14px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.04);
+  position:relative;border:1.5px solid #e8ddd5;
+  overflow:hidden;
+  backdrop-filter:blur(4px)
+}
+.card::before{
+  content:"";
+  position:absolute;inset:0;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.52), rgba(255,250,243,.9)),
+    url('dogs/p14.png') no-repeat right 4px top 8px / 100px auto;
+  opacity:.14;
+  pointer-events:none
+}
+.card > *{position:relative;z-index:1}
+.card::after{
+  content:"";
+  position:absolute;left:14px;right:14px;top:14px;bottom:14px;
+  border:1px dashed rgba(196,168,130,.18);
+  border-radius:18px;
+  pointer-events:none
+}
+.card h1{
+  font-size:24px;font-weight:800;color:#3d2c1f;margin:0 0 6px;letter-spacing:2px;
+  display:flex;align-items:center;justify-content:center;gap:8px
+}
+.card h1::before{
+  content:"";
+  width:32px;height:32px;flex:none;display:block;
+  background:url('dogs/p10.png') no-repeat center/contain;
+  opacity:.8
+}
+.card .sub{
+  color:#9e8e80;font-size:13px;margin:0 auto 18px;display:inline-block;
+  padding:6px 12px;border:1px dashed rgba(196,168,130,.45);
+  border-radius:999px;background:rgba(255,255,255,.45)
+}
+
+/* 开始页 */
+.splash{text-align:center;padding:30px 10px 20px}
+.splash-title{font-size:32px;font-weight:900;color:#3d2c1f;margin:0 0 4px;letter-spacing:2px}
+.splash-sub{font-size:13px;color:#b8a89a;font-weight:600;margin:0 0 20px}
+.splash-dog{max-width:160px;max-height:160px;margin:0 auto 22px;object-fit:contain;display:block}
+.splash-btn{
+  display:inline-block;padding:14px 32px;
+  border:1.5px solid #3d2c1f;border-radius:18px 14px 20px 13px;
+  background:#3d2c1f;color:#fff;font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 3px 12px rgba(61,44,31,0.1);
+  transition:all .3s;letter-spacing:.5px
+}
+.splash-btn:hover{background:#5c4033;transform:translateY(-2px)}
+.splash-btn:active{transform:translateY(0)}
+.splash.hide{display:none}
+.splash-out{animation:splashOut .45s forwards}
+@keyframes splashOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.95)}}
+
+/* 进度点 */
+.steps{display:flex;justify-content:center;gap:12px;margin-bottom:18px}
+.step{
+  width:28px;height:28px;border-radius:11px;background:rgba(255,255,255,.78);
+  border:1.5px solid #dfd2c8;position:relative;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 2px 6px rgba(61,44,31,0.04)
+}
+.step::before{
+  content:"";
+  position:absolute;left:50%;top:50%;width:22px;height:22px;display:block;
+  transform:translate(-50%,-50%);
+  background-repeat:no-repeat;
+  background-size:contain;background-position:center;
+  opacity:.26;filter:grayscale(100%) sepia(12%)
+}
+.step:nth-child(1)::before{background-image:url('dogs/p5.png')}
+.step:nth-child(2)::before{background-image:url('dogs/p6.png')}
+.step:nth-child(3)::before{background-image:url('dogs/p7.png')}
+.step.done{
+  background:#f1dfc9;border-color:#cfb18d;transform:rotate(-4deg) translateY(-1px)
+}
+.step.done::before{opacity:.82;filter:none}
+.step.cur{
+  background:#fff;border-color:#5c4033;transform:rotate(4deg) scale(1.06);
+  box-shadow:0 0 0 3px rgba(196,168,130,.18)
+}
+.step.cur::before{opacity:1}
+
+/* 提示文字 */
+.hint{
+  font-size:14px;color:#8c7a6b;margin:0 auto 14px;font-weight:500;min-height:22px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:9px 12px;background:rgba(255,255,255,.58);
+  border:1px dashed rgba(196,168,130,.4);border-radius:16px;
+  max-width:280px
+}
+.hint::before{
+  content:"";
+  width:22px;height:22px;flex:none;display:block;
+  background:url('dogs/p8.png') no-repeat center/contain;
+  opacity:.72
+}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* 词语网格 */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;min-height:190px}
+.word{
+  background:rgba(255,255,255,.92);border:1.5px solid #dfd2c8;border-radius:18px 15px 19px 14px;
+  padding:16px 6px;font-size:15px;font-weight:600;color:#3d2c1f;
+  cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);
+  user-select:none;position:relative;
+  box-shadow:0 3px 8px rgba(61,44,31,0.04)
+}
+.word::before{
+  content:"";
+  position:absolute;left:6px;top:6px;width:20px;height:20px;display:block;
+  background-repeat:no-repeat;
+  background-size:contain;background-position:center;
+  opacity:.16;border-radius:5px
+}
+.word.dog-s1::before{background-image:url('dogs/p1.png')}
+.word.dog-s2::before{background-image:url('dogs/p2.png')}
+.word.dog-s3::before{background-image:url('dogs/p3.png')}
+.word.dog-s4::before{background-image:url('dogs/p4.png')}
+.word.dog-s5::before{background-image:url('dogs/p5.png')}
+.word.dog-s6::before{background-image:url('dogs/p6.png')}
+.word.dog-s7::before{background-image:url('dogs/p7.png')}
+.word.dog-s8::before{background-image:url('dogs/p8.png')}
+.word.dog-s9::before{background-image:url('dogs/p9.png')}
+.word::after{
+  content:"";
+  position:absolute;left:5px;right:5px;top:5px;bottom:5px;
+  border:1px dashed rgba(196,168,130,.18);border-radius:14px 12px 15px 10px;
+  pointer-events:none
+}
+.word:hover{
+  border-color:#c4a882;background:#fcf6f0;
+  transform:translateY(-2px) rotate(-1.5deg)
+}
+.word:active{transform:scale(0.95)}
+.word.pop{animation:popIn .35s cubic-bezier(.175,.885,.32,1.275) both}
+.word.out{animation:popOut .3s ease both;pointer-events:none}
+.word.chosen{
+  background:#3d2c1f;color:#fff;border-color:#3d2c1f;
+  box-shadow:0 3px 12px rgba(61,44,31,0.15);
+  transform:rotate(-2deg)
+}
+.word.chosen::before{opacity:.4;filter:grayscale(100%) brightness(2)}
+.word.chosen::after{border-color:rgba(255,255,255,.14)}
+@keyframes popIn{0%{opacity:0;transform:scale(0.6) translateY(10px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes popOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.5) translateY(-20px)}}
+
+/* 已选展示 */
+.selected-row{display:flex;justify-content:center;gap:10px;margin-bottom:6px;min-height:42px;flex-wrap:wrap}
+.selected-tag{
+  background:#f3e7de;color:#3d2c1f;padding:8px 14px 8px 10px;border-radius:18px 14px 19px 12px;
+  font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:6px;
+  animation:popIn .35s both;box-shadow:0 2px 8px rgba(61,44,31,0.08);
+  border:1.5px solid #dccfc4
+}
+.selected-tag::before{
+  content:"";
+  width:20px;height:20px;flex:none;display:block;
+  background-repeat:no-repeat;
+  background-size:contain;background-position:center;
+  opacity:.72
+}
+.selected-tag.dog-p1::before{background-image:url('dogs/p10.png')}
+.selected-tag.dog-p2::before{background-image:url('dogs/p11.png')}
+.selected-tag.dog-p3::before{background-image:url('dogs/p12.png')}
+.selected-tag .num{
+  font-size:10px;opacity:.7;font-weight:700;
+  background:#f3e7de;border-radius:999px;padding:2px 5px
+}
+
+/* 推荐结果 */
+.result{display:none}
+.result.show{display:block;animation:cardIn .5s}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.result-icon{
+  --brand-aura:rgba(196,168,130,.26);
+  width:230px;height:220px;margin:0 auto 4px;
+  position:relative
+}
+.result-icon::before{
+  content:"";
+  position:absolute;left:50%;bottom:18px;width:190px;height:64px;
+  transform:translateX(-50%);
+  background:radial-gradient(circle, rgba(61,44,31,.16) 0%, rgba(61,44,31,0) 72%);
+  filter:blur(12px)
+}
+.result-icon::after{
+  content:"";
+  position:absolute;left:50%;top:18px;width:180px;height:180px;
+  transform:translateX(-50%);
+  background:radial-gradient(circle, var(--brand-aura) 0%, rgba(255,255,255,0) 68%);
+  opacity:.42;filter:blur(2px)
+}
+.dog-frame{
+  position:absolute;left:50%;top:50%;width:152px;height:152px;
+  transform:translate(-50%,-56%);
+  border-radius:50%;overflow:hidden;
+  box-shadow:0 0 0 5px var(--brand-ring),0 0 0 9px rgba(255,255,255,.36),0 8px 24px rgba(61,44,31,.13);
+  z-index:1;background:#fff9f5
+}
+.dog-hero{
+  width:100%;height:100%;
+  background-repeat:no-repeat;
+  background-size:contain;background-position:center
+}
+.hero-sticker{
+  position:absolute;right:6px;bottom:14px;z-index:3;
+  width:74px;height:92px;
+  padding:4px;
+  border-radius:14px;
+  border:5px solid;background:#fff;
+  box-shadow:0 3px 12px rgba(61,44,31,.12);
+  text-align:center
+}
+.hero-sticker .sticker-logo{
+  display:block;width:56px;height:74px;margin:0 auto;object-fit:contain
+}
+.result-name{font-size:20px;font-weight:800;color:#3d2c1f;margin:0}
+.result-brand{
+  display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  margin:4px 0 12px
+}
+.brand-badge{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 10px 6px 8px;
+  background:#fff;border:1.5px solid #e8ddd5;border-radius:16px 12px 17px 12px;
+  box-shadow:0 3px 8px rgba(61,44,31,0.04)
+}
+.brand-badge .badge-logo{
+  width:auto;height:28px;max-width:100px;object-fit:contain;display:block
+}
+.brand-badge .txt{
+  font-size:12px;font-weight:700;color:#6f5c4c
+}
+.result-tags{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:12px}
+.result-tags span{
+  padding:5px 12px;border-radius:15px 11px 16px 10px;font-size:11px;font-weight:600;
+  border:1px solid rgba(196,168,130,.22);box-shadow:0 2px 6px rgba(61,44,31,0.03);
+  display:inline-flex;align-items:center;gap:4px
+}
+.result-tags span::before{
+  content:"";
+  width:14px;height:14px;display:block;flex:none;
+  background:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"%3E%3Cpath d="M20 12a5 5 0 0 0-4.5-5 6.5 6.5 0 0 0-12 3 4.5 4.5 0 0 0 1 8.5H19a4 4 0 0 0 1-6.5z" fill="%23c4a882" opacity=".5"/%3E%3C/svg%3E') no-repeat center/contain
+}
+.rt-sweet{background:#f3e7de;color:#8b5e3c}
+.rt-temp{background:#e3edf2;color:#2c6b8a}
+.rt-top{background:#f5edd6;color:#8b7a3c}
+.rt-hit{background:#e6e8e0;color:#4a5c3c}
+.result-reason{
+  background:#fcf6f0;border-radius:18px 14px 20px 12px;padding:14px 16px;margin:10px 0;
+  font-size:13px;color:#5d4a3c;line-height:1.7;text-align:left;
+  border:1.5px solid #eadfd6;position:relative
+}
+.result-reason::before{
+  content:"";
+  position:absolute;right:12px;top:10px;width:20px;height:20px;
+  background:url('dogs/p13.png') no-repeat center/contain;
+  opacity:.14
+}
+.result-reason .l{
+  font-size:11px;color:#a88968;font-weight:700;margin-bottom:6px;letter-spacing:1px;
+  display:flex;align-items:center;gap:6px
+}
+.result-reason .l::before{
+  content:"";
+  width:15px;height:15px;flex:none;
+  background:url('dogs/p11.png') no-repeat center/contain;
+  opacity:.7
+}
+.result-fortune{
+  background:#fcf6f0;border:1.5px dashed #dccfc4;border-radius:18px 14px 18px 12px;padding:12px 12px 12px 14px;
+  font-size:13px;color:#8c7a6b;font-weight:600;margin:10px 0
+}
+
+/* 按钮 */
+.btn{
+  width:100%;padding:13px;border:1.5px solid #3d2c1f;border-radius:18px 14px 20px 13px;
+  font-size:15px;font-weight:700;color:#fff;cursor:pointer;text-align:center;
+  background:#3d2c1f;box-shadow:0 3px 12px rgba(61,44,31,0.1);
+  transition:all .3s;margin-top:4px;
+  position:relative
+}
+.btn::before{
+  content:"";
+  position:absolute;left:9px;top:50%;width:18px;height:18px;
+  transform:translateY(-50%);
+  background:url('dogs/p7.png') no-repeat center/contain;
+  filter:grayscale(100%) brightness(1.2);
+  opacity:.72
+}
+.btn::after{
+  content:"";
+  position:absolute;left:6px;right:6px;top:6px;bottom:6px;
+  border:1px dashed rgba(255,255,255,.16);border-radius:14px 11px 16px 10px;
+  pointer-events:none
+}
+.btn:hover{background:#5c4033;transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:0.4;cursor:default;transform:none!important}
+.btn-flat{
+  background:transparent;color:#b8a89a;padding:10px;
+  border:1.5px dashed #dccfc4;border-radius:12px;margin-top:8px;cursor:pointer
+}
+.btn-flat:hover{color:#5c4033;border-color:#5c4033}
+
+/* 历史 */
+.hist{
+  text-align:left;margin-top:10px;background:rgba(255,250,243,.86);
+  border:1.5px solid #e8ddd5;border-radius:20px;padding:14px 14px 12px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.03);
+  position:relative;overflow:hidden;backdrop-filter:blur(4px)
+}
+.hist::before{
+  content:"";
+  position:absolute;right:-14px;bottom:-8px;width:126px;height:126px;
+  background:url('dogs/p15.png') no-repeat center/contain;
+  opacity:.11;filter:grayscale(100%) sepia(20%);
+  pointer-events:none
+}
+.hist > *{position:relative;z-index:1}
+.hist h3{font-size:12px;color:#b8a89a;margin:0 0 6px;letter-spacing:1px}
+.hist-item{
+  background:#fcf9f6;border-radius:14px 10px 14px 10px;padding:8px 12px;
+  display:flex;align-items:center;gap:8px;font-size:12px;
+  color:#5d4a3c;margin-bottom:4px;border:1px solid #ede5dd
+}
+.hist-item .e{
+  width:34px;height:34px;border-radius:12px;flex:none;
+  background:rgba(255,255,255,.82);border:1px solid #e8ddd5;
+  display:flex;align-items:center;justify-content:center
+}
+.hist-item .e::before{
+  content:"";
+  width:22px;height:22px;display:block;
+  background-repeat:no-repeat;
+  background-size:contain;background-position:center
+}
+.hist-item .e.dog-h1::before{background-image:url('dogs/p1.png')}
+.hist-item .e.dog-h2::before{background-image:url('dogs/p3.png')}
+.hist-item .e.dog-h3::before{background-image:url('dogs/p5.png')}
+.hist-item .e.dog-h4::before{background-image:url('dogs/p7.png')}
+.hist-item .e.dog-h5::before{background-image:url('dogs/p9.png')}
+.hist-item .e.dog-h6::before{background-image:url('dogs/p11.png')}
+.hist-item .i{flex:1}
+.hist-item .n{font-weight:600}
+.hist-item .m{font-size:11px;color:#b8a89a}
+.empty{color:#d0c4b8;padding:12px;font-size:13px;text-align:center}
+.rst-btn{
+  background:transparent;border:1px dashed #dccfc4;border-radius:12px 9px 12px 8px;
+  color:#c4b8aa;font-size:11px;padding:8px;width:100%;cursor:pointer;margin-top:4px
+}
+.rst-btn:hover{border-color:#8c7a6b;color:#8c7a6b}
+
+@media (max-width:420px){
+  body{padding:16px}
+  body::before{background-size:70px,92px,78px,84px}
+  .card::before{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.56), rgba(255,250,243,.9)),
+      url('dogs/p14.png') no-repeat right 2px top 10px / 74px auto
+  }
+  .hist::before{width:96px;height:96px}
+  .result-icon{width:210px;height:202px}
+  .dog-frame{width:130px;height:130px}
+  .hero-sticker{right:4px;bottom:10px;width:60px;height:74px;padding:2px}
+  .hero-sticker .sticker-logo{width:44px;height:60px}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card" id="mainCard">
+    <div class="splash" id="splashPhase">
+      <div class="splash-title">今日奶茶</div>
+      <div class="splash-sub">每一天，都值得一杯好茶</div>
+      <img class="splash-dog" id="splashDog" src="dogs/p5.png" alt="">
+      <button class="splash-btn" id="splashBtn">开始今日奶茶 →</button>
+      <div style="margin-top:18px;font-size:11px;color:#b8a89a;line-height:1.5">☕ 糖分摄入不宜贪多<br>今天喝完，要记得多喝水哦</div>
+    </div>
+    <div id="pickPhase" style="display:none">
+      <h1>今日奶茶</h1>
+      <span class="sub">选三个词，配一杯最适合你的奶茶</span>
+
+      <div class="steps" id="steps">
+        <div class="step cur" id="s1"></div>
+        <div class="step" id="s2"></div>
+        <div class="step" id="s3"></div>
+      </div>
+
+      <div class="selected-row" id="selectedRow"></div>
+      <div class="hint" id="hint">第 1 轮：选一个你喜欢的词</div>
+
+      <div class="grid" id="wordGrid"></div>
+    </div>
+
+    <div class="result" id="resultPhase">
+      <div class="result-icon" id="rIcon">
+        <div class="dog-frame" id="dogFrame"><div class="dog-hero" id="dogHero"></div></div>
+        <div class="hero-sticker" id="rSticker"></div>
+      </div>
+      <div class="result-name" id="rName"></div>
+      <div class="result-brand" id="rBrand"></div>
+      <div class="result-tags" id="rTags"></div>
+      <div class="result-reason"><div class="l">推荐理由</div><div id="rReason"></div></div>
+      <div class="result-fortune" id="rFortune"></div>
+      <button class="btn" id="againBtn">再来一杯</button>
+    </div>
+  </div>
+
+  <div class="hist">
+    <h3>推荐记录</h3>
+    <div id="histList"><div class="empty">还没有记录~</div></div>
+    <button class="rst-btn" id="rstBtn">清空记录</button>
+  </div>
+</div>
+
+<script>
+// ===== 词库 =====
+var allTags = [
+  '晚风','星辰','山海','微光','暮色','初雪','云朵','月光','微风','细雨','落日','朝霞',
+  '山川','湖泊','森林','岛屿','银河','花海','枫叶','瀑布','冰川','竹林','草原','灯塔',
+  '帆船','秋千','风铃','信笺','风筝','单车','吉他','唱片','相机','油画','烛台','屋檐',
+  '温柔','清冷','热烈','寂寥','浪漫','缱绻','浅喜','深爱','初见','重逢','期许','怀念',
+  '远方','流浪','诗意','涟漪','倒影','余晖','薄雾','蝉鸣','落叶','篝火','炊烟','霜降',
+  '粉色','蓝色','紫色','绿色','黑色','白色','春风','夏夜','秋雨','冬雪','午后','黄昏',
+  '海风','极光','霜叶','余温','潮汐','晴空'
+];
+
+// ===== 88款饮品数据 =====
+var drinks = [
+  {b:'霸王茶姬',n:'伯牙绝弦',e:'🏯',g:['温柔','清冷','云朵','午后','月光','晚风'],s:'五分糖',p:'去冰',t:'茉莉茶冻',r:'懂茶的人喝伯牙绝弦，懂你的人正在路上。累计卖出12.5亿杯不是没道理。',r2:'12.5亿杯是什么概念？绕地球好几圈了。你喝的这一杯，可能是第12.5亿零1杯。'},
+  {b:'霸王茶姬',n:'春日桃桃',e:'🌸',g:['春风','初恋','粉色','落日','浪漫','朝霞'],s:'五分糖',p:'去冰',t:'水蜜桃果肉+茶冻',r:'春天是被水蜜桃味的风吹醒的。喝一口，假装自己还在初恋。',r2:'这一杯下去，你就是朋友圈最春天的仔。建议搭配一首周杰伦的《七里香》食用。'},
+  {b:'霸王茶姬',n:'花田乌龙',e:'🌸',g:['春风','微风','温柔','缱绻','浪漫'],s:'五分糖',p:'去冰',t:'白桃果肉+乌龙茶冻',r:'白桃和乌龙，像极了暗恋——一个甜得要命，一个默默回甘。',r2:'喜欢的人不回消息？喝杯花田乌龙吧，至少这杯茶会给你回甘。'},
+  {b:'霸王茶姬',n:'万里木兰',e:'🏯',g:['热烈','余晖','蝉鸣','怀念','黄昏'],s:'五分糖',p:'去冰',t:'红茶冻',r:'喝完凌晨三点还睡不着？那说明你喝到正品了。建议早上喝，除非你想看日出。',r2:'这杯的咖啡因含量约等于三杯美式。喝完别开车，也别开会——你可能会把桌子掀了。'},
+  {b:'霸王茶姬',n:'青青糯山',e:'🏯',g:['温柔','清冷','微风','细雨','春风'],s:'五分糖',p:'去冰',t:'糯米茶冻',r:'像穿着一件刚晒好的棉布衬衫，有阳光和米香的味道。冷门但懂的人都说好。',r2:'糯米香是一种让人上瘾的味道，像小时候外婆煮的粥。冷门宝藏，懂的自然懂。'},
+  {b:'霸王茶姬',n:'桂馥兰香',e:'🏯',g:['秋雨','暮色','落叶','温柔','怀念','枫叶'],s:'五分糖',p:'去冰',t:'桂花冻',r:'秋天的第一杯奶茶不一定是他送的，但桂花味的奶茶你可以自己买。',r2:'桂花是秋天的香水，这杯是桂花味的液态拥抱。不需要男朋友，你需要的是这杯茶。'},
+  {b:'喜茶',n:'多肉葡萄',e:'🍇',g:['岛屿','紫色','星辰','帆船','银河'],s:'七分糖',p:'少冰',t:'手剥葡萄+脆波波+芝士奶盖',r:'手剥葡萄是对一颗葡萄最大的尊重，芝士奶盖是对自己最好的犒劳。',r2:'每一颗葡萄都是人工手剥的——喜茶的员工大概已经练成了剥葡萄世界冠军。'},
+  {b:'喜茶',n:'芝芝莓莓',e:'🍓',g:['初恋','粉色','浪漫','倒影','重逢'],s:'七分糖',p:'少冰',t:'鲜草莓+芝士奶盖+脆波波',r:'草莓是水果界的甜妹，芝芝是奶盖界的顶流。它俩加一起，等于你的今日甜度。',r2:'喜茶的初代网红，当年排队三小时就为了这一杯。现在不用排队了，但味道还是那个味道。'},
+  {b:'喜茶',n:'椰椰芒芒',e:'🥭',g:['夏夜','岛屿','帆船','落日','海风'],s:'七分糖',p:'少冰',t:'芒果粒+椰奶冻+脆波波+芝士奶盖',r:'芒果和椰子私奔到了热带海岛，你一口就喝到了他们的蜜月旅行。',r2:'芒果和椰子坐飞机去了热带，你花30块钱就买到了它们的机票。划算。'},
+  {b:'喜茶',n:'黑糖波波奶茶',e:'🧊',g:['冬雪','秋雨','温柔','篝火','屋檐'],s:'七分糖',p:'热饮',t:'黑糖珍珠+鲜牛奶',r:'黑糖挂壁像水墨画，珍珠弹牙像蹦床。下雨天和它一起宅家，世界与你无关。',r2:'黑糖挂壁是它的身份证，珍珠弹牙是它的基本功。喝完这杯，你就是最温暖的仔。'},
+  {b:'喜茶',n:'满杯红柚',e:'🧊',g:['夏夜','余晖','落日','清冷','涟漪'],s:'三分糖',p:'去冰',t:'红柚粒+芦荟+绿茶',r:'红柚是微苦的成年人快乐，比生活甜一点点，刚刚好。',r2:'三分糖是对红柚最大的尊重——它本身就带点苦，甜太多反而掩盖了它的性格。'},
+  {b:'喜茶',n:'满杯椰香',e:'🥥',g:['夏夜','帆船','岛屿','海风','蓝色'],s:'五分糖',p:'正常冰',t:'椰水+椰奶冻+脆波波',r:'这杯不是奶茶，是海风的快递。喝一口，耳边自动播放海浪声。',r2:'椰水清甜得像海边的风，喝完想去三亚但又看了看余额——算了，再喝一杯就当去过了。'},
+  {b:'茶百道',n:'杨枝甘露',e:'🥭',g:['夏夜','落日','花海','帆船','岛屿'],s:'七分糖',p:'少冰',t:'芒果粒+西柚粒+脆波波+椰奶',r:'芒果和西柚在椰奶里打架，你的舌头当裁判。结果是——你赢了。',r2:'茶百道的销量冠军，芒果和西柚的经典CP。喝它不需要理由，就像喜欢一个人不需要借口。'},
+  {b:'茶百道',n:'豆乳米麻薯',e:'🐼',g:['冬雪','秋雨','温柔','屋檐','篝火'],s:'七分糖',p:'热饮',t:'豆乳奶盖+麻薯+血糯米+黄豆粉',r:'麻薯糯到心软，血糯米暖到胃暖。喝它像被人从背后抱住，不想撒手。',r2:'血糯米加麻薯等于一杯粥（不是）。热量虽高但快乐更高，减肥的事明天再说。'},
+  {b:'茶百道',n:'葡萄冻冻',e:'🐼',g:['夏夜','紫色','星辰','银河','余晖'],s:'五分糖',p:'少冰',t:'手剥葡萄+冻冻+绿茶底',r:'葡萄冻冻有点像夏天傍晚的风——清爽、凉快、还带着点果香。',r2:'冻冻的口感比果冻Q弹，比布丁清爽。夏天来一杯，比吹空调还解暑。'},
+  {b:'茶百道',n:'茉莉奶绿',e:'🐼',g:['春风','微风','云朵','清冷','温柔'],s:'三分糖',p:'去冰',t:'脆波波+椰果',r:'茉莉花茶配鲜奶，像白衬衫配帆布鞋——简单干净，永远不会出错。',r2:'不知道喝什么的时候就选它。茉莉奶绿是奶茶界的"随便"——选了绝对不会后悔的那种。'},
+  {b:'茶百道',n:'生椰西瓜',e:'🐼',g:['夏夜','微风','海风','蓝色','岛屿'],s:'五分糖',p:'正常冰',t:'西瓜汁+生椰+啵啵',r:'西瓜是夏天的本体，椰子是海岛的灵魂。它俩在一起，你等于去了趟三亚。',r2:'西瓜加椰子的组合，喝起来像在沙滩上吃西瓜——只不过你实际上在工位上摸鱼。'},
+  {b:'茶百道',n:'黑糖波波鲜奶茶',e:'🖤',g:['热烈','怀念','余晖','篝火','屋檐'],s:'七分糖',p:'少冰',t:'黑糖珍珠+鲜牛奶+奶盖',r:'打工人三件套：早上的咖啡、中午的外卖、下午的这杯黑糖波波。续命中。',r2:'下午三点不喝这杯，你的同事可能会遭受一场无妄之灾。为了世界和平，喝吧。'},
+  {b:'蜜雪冰城',n:'冰鲜柠檬水',e:'🍋',g:['夏夜','落日','微风','单车','海风'],s:'五分糖',p:'正常冰',t:'鲜切柠檬片+薄荷叶',r:'别的奶茶店卖的是装修，蜜雪卖的是良心。4块钱买不了吃亏买不了上当。',r2:'4块钱你买不了吃亏买不了上当，但你能买一杯冰鲜柠檬水。蜜雪冰城，价格屠夫。'},
+  {b:'蜜雪冰城',n:'摩天脆脆冰淇淋',e:'🍦',g:['夏夜','热烈','白色','风铃','草原'],s:'全糖',p:'正常冰',t:'脆筒+巧克力酱',r:'3块钱的快乐，你在大街上都找不到比这更便宜的快乐了。脆筒酥脆，心情也酥。',r2:'3块钱一支，比便利店的老冰棍还便宜。蜜雪冰城：我不赚钱，我只是想让你快乐。'},
+  {b:'蜜雪冰城',n:'草莓啵啵',e:'❄️',g:['粉色','初恋','浪漫','花海','重逢'],s:'七分糖',p:'少冰',t:'草莓果肉+啵啵+绿茶',r:'6块钱喝出60块的少女心。草莓啵啵在嘴里爆炸的时候，你就是偶像剧女主。',r2:'粉色是它的保护色，草莓是它的必杀技。6块钱就能拥有的少女心，比医美划算。'},
+  {b:'蜜雪冰城',n:'柠檬红茶',e:'❄️',g:['午后','余晖','蝉鸣','单车','唱片'],s:'五分糖',p:'正常冰',t:'柠檬片+薄荷',r:'5块钱让你精神一下午，比咖啡便宜，比老板画的饼实在。',r2:'5块钱续命一下午，性价比超过你老板画的任何一张饼。建议人手一杯。'},
+  {b:'蜜雪冰城',n:'黑糖珍珠奶茶',e:'❄️',g:['冬雪','秋雨','温柔','屋檐','篝火'],s:'七分糖',p:'热饮',t:'黑糖珍珠+奶茶',r:'8块钱的暖心套餐。黑糖负责甜，珍珠负责Q，你负责喝完打个嗝说"舒服"。',r2:'只要8块钱，黑糖珍珠奶茶带回家。蜜雪的定价策略：让其他奶茶店无路可走。'},
+  {b:'蜜雪冰城',n:'蜜桃四季春',e:'❄️',g:['春风','午后','粉色','微风','风筝'],s:'五分糖',p:'少冰',t:'蜜桃果肉+茶冻',r:'蜜桃味的风吹过四季春的茶田，6块钱就能拥有春天，还要什么自行车。',r2:'蜜桃四季春这个名字就很诗意，6块钱的价格更诗意。建议改名叫"蜜桃四季春·穷开心版"。'},
+  {b:'奈雪的茶',n:'霸气草莓',e:'🍓',g:['粉色','浪漫','花海','重逢','风铃'],s:'七分糖',p:'少冰',t:'草莓果肉+奶盖+水晶冻',r:'草莓季很短，但奈雪的草莓茶一年都在。有些东西不用等季节，等什么？等下班。',r2:'整颗草莓鲜榨，喝一口感觉自己是在吃草莓蛋糕——只不过用的是吸管。'},
+  {b:'奈雪的茶',n:'霸气橙子',e:'🍊',g:['夏夜','落日','余晖','帆船','期许'],s:'五分糖',p:'少冰',t:'整颗鲜切橙子+芦荟粒',r:'一整颗橙子鲜切现泡，维C含量约等于你妈让你多吃水果的唠叨。',r2:'一整颗橙子切给你，比你的前任大方多了（至少它不会走）。'},
+  {b:'奈雪的茶',n:'霸气牛油果奶茶',e:'🥑',g:['温柔','清冷','期许','远方','诗意'],s:'五分糖',p:'少冰',t:'澳洲牛油果泥+水晶冻+酸奶',r:'牛油果是果中之茶艺师——清淡、高级、不发胖。喝它=精致生活人设已上线。',r2:'牛油果是健身人士的信仰，酸奶是减肥女孩的执念。它俩在一起——你喝的是信仰。'},
+  {b:'奈雪的茶',n:'霸气柠檬茶',e:'🌸',g:['夏夜','热烈','蝉鸣','涟漪','单车'],s:'三分糖',p:'正常冰',t:'柠檬片+薄荷叶+冻冻',r:'柠檬的酸爽直冲天灵盖，像周一早上的闹钟——狠但有效。',r2:'酸到皱眉、爽到飞起。喝一口提神醒脑，比风油精还管用。建议改名叫"霸气清醒茶"。'},
+  {b:'奈雪的茶',n:'霸气榴莲',e:'🌸',g:['热烈','寂寥','山海','流浪','远方'],s:'七分糖',p:'少冰',t:'榴莲果肉+奶盖+水晶冻',r:'爱的人说它是水果之王，恨的人说它是生化武器。选它，需要梁静茹给你勇气。',r2:'这一杯下去，方圆五米的人都知道你喝了什么。建议在空旷处饮用，以免引起公愤。'},
+  {b:'古茗',n:'超A芝士葡萄',e:'🍇',g:['紫色','星辰','银河','岛屿','花海'],s:'五分糖',p:'少冰',t:'手剥葡萄+芝士奶盖+脆波波',r:'9000家门店都在卖的爆款。手剥葡萄皮的时间，够你听完两首歌了。',r2:'芝士奶盖咸香浓郁，葡萄果肉颗颗手剥。这一杯告诉你：有些好东西，值得等。'},
+  {b:'古茗',n:'云雾栀子青',e:'🌿',g:['微风','细雨','云朵','清冷','薄雾'],s:'三分糖',p:'去冰',t:'栀子花冻+脆波波',r:'栀子花开的夏天，喝一口像走进清晨的花园。适合正在暗恋的人。',r2:'栀子花的香气是夏天最温柔的陷阱——你以为你在喝茶，其实你在闻一朵花的告白。'},
+  {b:'古茗',n:'云岭茉莉白',e:'🍵',g:['云朵','白色','初见','月光','清冷'],s:'五分糖',p:'去冰',t:'茉莉花冻+脆波波',r:'初见的味道大概就是茉莉花香混着奶味——心动但不张扬，刚刚好。',r2:'茉莉白听起来就像白月光的颜色。喝一口，想起了那个让你心动的人（但可能人家已经结婚了）。'},
+  {b:'古茗',n:'龙井香青团',e:'🍵',g:['春风','微风','重逢','期许','竹林'],s:'五分糖',p:'温热',t:'龙井茶底+手作青团',r:'龙井茶遇到青团，像江南的春天撞上了清明。喝一口，脑子里自动播放《青花瓷》。',r2:'这杯里有一个完整的春天——龙井是春雨，青团是清明，喝下去连灵魂都绿了。'},
+  {b:'古茗',n:'牛油果巴旦木酸奶',e:'🥑',g:['浅喜','期许','诗意','远方','清冷'],s:'五分糖',p:'少冰',t:'牛油果泥+巴旦木碎+酸奶',r:'牛油果搞健身，巴旦木搞学习，酸奶搞肠胃。它们仨凑一块——你搞钱。',r2:'牛油果的绵密像清晨的拥抱，巴旦木的酥脆像生活里的小惊喜。喝的是酸奶，咽下的是温柔。'},
+  {b:'古茗',n:'百香果柠檬茶',e:'🍋',g:['夏夜','热烈','蝉鸣','涟漪','单车'],s:'五分糖',p:'正常冰',t:'百香果+柠檬片+薄荷叶',r:'百香果是水果界的酸菜鱼——又酸又爽。配上柠檬，酸上加酸但上头。',r2:'百香果加柠檬等于双重酸爽。喝第一口的时候你皱了皱眉，但第二口就开始上瘾了。'},
+  {b:'书亦烧仙草',n:'招牌烧仙草',e:'🌿',g:['温柔','秋雨','屋檐','篝火','怀念'],s:'七分糖',p:'常温',t:'仙草冻+红豆+绿豆+莲子+花生+珍珠',r:'半杯都是料，吃它像在挖宝。每一口都在想：下一勺会吃到什么惊喜？',r2:'半杯都是料这句话不是广告，是陈述事实。一杯顶一顿饭，建议改名叫"书亦烧仙草·代餐版"。'},
+  {b:'书亦烧仙草',n:'葡萄酸奶昔',e:'🌿',g:['紫色','夏夜','星辰','银河','唱片'],s:'七分糖',p:'少冰',t:'葡萄冰沙+酸奶+脆波波',r:'葡萄和酸奶在冰沙里跳华尔兹，你吸一口——好家伙，全场最佳观众就是你。',r2:'紫色的冰沙里藏着夏夜的所有秘密。喝一口，星辰在舌尖融化。'},
+  {b:'书亦烧仙草',n:'生椰柠檬茶',e:'🌿',g:['夏夜','微风','海风','帆船','岛屿'],s:'五分糖',p:'正常冰',t:'椰乳+柠檬+茶冻',r:'椰乳和柠檬是奶茶界的"没头脑和不高兴"——搭在一起竟然莫名和谐。',r2:'生椰和柠檬的搭配听起来像黑暗料理，但喝起来真香。奶茶界的"真香定律"代表。'},
+  {b:'书亦烧仙草',n:'薄荷奶绿',e:'🌿',g:['夏夜','微风','云朵','清冷','草原'],s:'三分糖',p:'去冰',t:'薄荷冻+脆波波',r:'薄荷味喝下去，感觉整个喉咙都装了空调。夏天续命神器。',r2:'喝完整个人从嘴巴到喉咙都是凉的，像含了一颗薄荷糖但比薄荷糖爽一百倍。'},
+  {b:'书亦烧仙草',n:'杨梅冰茶',e:'🌿',g:['夏夜','落日','余晖','篝火','热烈'],s:'七分糖',p:'正常冰',t:'杨梅果肉+冻冻+脆波波',r:'杨梅是夏天最任性的水果——季节短、价格贵、但真的好喝。遇到了就别错过。',r2:'杨梅的季节比你的年假还短。遇到了就赶紧喝，错过了就要等明年。'},
+  {b:'沪上阿姨',n:'厚芋泥啵啵奶茶',e:'💜',g:['冬雪','秋雨','紫色','屋檐','篝火'],s:'七分糖',p:'热饮',t:'厚芋泥+芋圆啵啵+奶盖',r:'芋泥控的终极信仰——这杯不是奶茶，是液态的芋泥蛋糕。8250家门店都在卖。',r2:'芋泥厚到能当饭吃，啵啵多到能当零食。这一杯下去，你今天不用吃饭了。'},
+  {b:'沪上阿姨',n:'杨梅冰汤圆',e:'👩',g:['夏夜','落日','风铃','花海','单车'],s:'七分糖',p:'少冰',t:'杨梅果肉+小汤圆+冻冻',r:'汤圆掉进了杨梅堆里，糯叽叽遇上酸溜溜。像夏天你遇到的那个让你心痒的人。',r2:'汤圆和杨梅的跨界合作，糯叽叽的汤圆在酸溜溜的杨梅汁里游泳。这杯奇奇怪怪但可可爱爱。'},
+  {b:'沪上阿姨',n:'葡萄柠檬茶',e:'👩',g:['紫色','夏夜','余晖','涟漪','唱片'],s:'五分糖',p:'正常冰',t:'葡萄果肉+柠檬片+脆波波',r:'葡萄的甜和柠檬的酸在打架，你的舌头是裁判——最后你宣布：都到我肚子里去。',r2:'葡萄甜柠檬酸，这对CP像极了爱情——甜中带酸，但就是停不下来。'},
+  {b:'沪上阿姨',n:'草莓柠檬茶',e:'👩',g:['粉色','夏夜','初恋','浪漫','风铃'],s:'五分糖',p:'正常冰',t:'草莓果肉+柠檬片+脆波波',r:'草莓想跟柠檬谈恋爱，一个太甜一个太酸。最后中和了一下，变成了这杯刚刚好的茶。',r2:'草莓和柠檬的爱情故事——一个甜得要命，一个酸得要死。但它们在一起，就是酸甜平衡的完美。'},
+  {b:'沪上阿姨',n:'绿豆沙牛乳',e:'👩',g:['夏夜','期许','蝉鸣','屋檐','怀念'],s:'五分糖',p:'常温',t:'绿豆沙+牛乳+冻冻',r:'奶奶熬的绿豆汤加上牛奶，就是这杯。喝的不是奶茶，是童年夏天的傍晚。',r2:'绿豆沙牛乳喝起来像奶奶煮的绿豆汤加了牛奶。想家了？来一杯，比打电话便宜。'},
+  {b:'CoCo都可',n:'百香果双响炮',e:'💣',g:['夏夜','热烈','蝉鸣','涟漪','单车'],s:'五分糖',p:'正常冰',t:'百香果+珍珠+椰果',r:'百香果是种子选手（真的有好多籽），珍珠和椰果是辅助。三管齐下，喝完元气满满。',r2:'名字叫双响炮，喝完确实像被炮打了一样精神。百香果的籽在嘴里爆开的感觉，解压。'},
+  {b:'CoCo都可',n:'奶茶三兄弟',e:'🧋',g:['温柔','怀念','秋雨','屋檐','篝火'],s:'五分糖',p:'正常冰',t:'珍珠+布丁+仙草冻',r:'名字叫三兄弟但一点不排外——珍珠布丁仙草冻三合一，一杯喝完三种快乐。',r2:'一杯喝到三种料，像买一送二。珍珠布丁仙草冻三兄弟在你嘴里开派对。'},
+  {b:'CoCo都可',n:'星空葡萄',e:'🥥',g:['紫色','星辰','银河','月光','帆船'],s:'七分糖',p:'少冰',t:'葡萄冰沙+芝士奶盖+脆波波',r:'紫色的渐变像梵高的星空，喝之前记得先拍照——朋友圈文案我都帮你想好了。',r2:'颜值高到不舍得喝，但喝了一口就停不下来。这杯的矛盾程度约等于"想瘦但想吃"。'},
+  {b:'CoCo都可',n:'鲜芋牛奶',e:'🥥',g:['冬雪','秋雨','紫色','屋檐','篝火'],s:'五分糖',p:'热饮',t:'芋泥+牛奶+珍珠',r:'鲜芋牛奶是秋冬的固定节目。芋泥绵密得像热恋期的聊天记录，甜到心里。',r2:'芋泥和牛奶的搭配像冬天的棉被——温暖、绵密、让人不想起来。喝它，适合赖床的早晨。'},
+  {b:'茶颜悦色',n:'声声乌龙',e:'🏮',g:['春风','微风','云朵','午后','期许'],s:'五分糖',p:'去冰',t:'小麦胚芽+奶泡',r:'长沙特产之一。来长沙不喝茶颜悦色，等于去北京没爬长城——白来了。',r2:'蜜桃乌龙香是长沙夏天的暗号。喝过这杯的人，才算真正到过长沙。'},
+  {b:'茶颜悦色',n:'幽兰拿铁',e:'🏮',g:['浪漫','怀念','月光','温柔','重逢'],s:'五分糖',p:'去冰',t:'碧根果碎+奶油顶+红茶冻',r:'碧根果碎是灵魂，奶油顶是本体。喝之前先掀盖吃奶油，这是茶颜的仪式感。',r2:'掀盖、吃奶油、喝茶——三个动作完成一次小确幸。碧根果碎的酥脆是这杯的最后一击。'},
+  {b:'茶颜悦色',n:'栀子生椰',e:'🏮',g:['夏夜','白色','浪漫','月光','海风'],s:'五分糖',p:'少冰',t:'栀子花冻+椰奶+脆波波',r:'栀子花和椰子一个开在夏天一个长在海边，它俩的相遇是跨次元的浪漫。',r2:'栀子花味的椰子？听起来像黑暗料理，但喝起来是真香。茶颜悦色又在搞事情了。'},
+  {b:'茶颜悦色',n:'三季虫',e:'🏮',g:['秋雨','落叶','怀念','清冷','霜降'],s:'五分糖',p:'去冰',t:'碧根果碎+奶油顶',r:'名字叫三季虫，但味道是一年四季都值得喝。喝一口，文艺值+100。',r2:'三季虫活不过冬天，但这杯茶可以陪你度过每一个寒冷时刻。有些存在短暂，但温柔长久。'},
+  {b:'一点点',n:'波霸奶茶',e:'🟢',g:['怀念','温柔','秋雨','屋檐','篝火'],s:'五分糖',p:'少冰',t:'波霸珍珠+布丁',r:'一点点家的波霸大到需要用"波霸"来命名。10块钱出头，喝的是性价比和青春。',r2:'波霸奶茶是一点点的镇店之宝。波霸大到吸管都要选粗的，不然吸不上来。'},
+  {b:'一点点',n:'冰淇淋红茶',e:'🟢',g:['夏夜','热烈','重逢','风铃','单车'],s:'五分糖',p:'正常冰',t:'香草冰淇淋+波霸',r:'冰淇淋融化在红茶里的过程，像极了夏天融化的你。喝前记得搅一搅。',r2:'冰淇淋加红茶等于夏天的正确打开方式。喝前搅一搅，不然第一口是纯冰淇淋第二口是纯红茶。'},
+  {b:'一点点',n:'奶绿装芒',e:'🟢',g:['夏夜','落日','岛屿','帆船','海风'],s:'七分糖',p:'少冰',t:'芒果粒+奶绿+波霸',r:'芒果和奶绿是神仙眷侣，波霸是电灯泡。但是没关系，三个一起快乐加倍。',r2:'芒果奶绿波霸三合一，一点点隐藏菜单里的王者。点它的时候记得说"我要隐藏款"。'},
+  {b:'一点点',n:'四季春茶+珍波椰',e:'🟢',g:['夏夜','午后','微风','释怀','单车'],s:'三分糖',p:'正常冰',t:'珍珠+波霸+椰果',r:'四季春茶底清爽得像你的白月光，珍波椰三料嚼起来像开盲盒——颗颗惊喜。',r2:'四季春茶底加三种料，一杯喝出四种口感。性价比超高，适合想喝很久但又预算有限的人。'},
+  {b:'一点点',n:'可可奶茶',e:'🟢',g:['冬雪','秋雨','温柔','屋檐','篝火'],s:'七分糖',p:'热饮',t:'珍珠+布丁',r:'可可奶茶是液体版的提拉米苏，喝一口感觉自己坐在巴黎左岸的咖啡馆。虽然其实在工位上。',r2:'喝这杯的时候适合配一首爵士乐假装自己在巴黎，虽然你实际上在加班。但至少嘴里是甜的。'},
+  {b:'一点点',n:'四季春茶',e:'🟢',g:['清冷','微风','午后','云朵','释怀'],s:'无糖',p:'去冰',t:'无',r:'无糖是对茶最大的尊重。喝它的人大概已经过了"需要糖才能快乐"的阶段——成熟了。',r2:'无糖是对茶最大的尊重。喝无糖茶的人，已经过了需要糖来哄自己的年纪——成年人的倔强。'},
+  {b:'益禾堂',n:'益禾烤奶',e:'🌾',g:['冬雪','秋雨','怀念','屋檐','篝火'],s:'七分糖',p:'热饮',t:'珍珠+布丁+仙草冻',r:'烤奶的味道像冬天街头的烤红薯——焦香、温暖、9块钱就能得到的快乐。',r2:'烤奶的焦香味是它的独家记忆。9块钱一杯，比你的午睡还便宜。'},
+  {b:'益禾堂',n:'薄荷柠檬冰',e:'🌾',g:['夏夜','热烈','蝉鸣','风铃','单车'],s:'三分糖',p:'正常冰',t:'柠檬片+薄荷叶+冻冻',r:'薄荷的清凉是物理攻击，柠檬的酸爽是魔法伤害。这杯喝下去，直接降温5度。',r2:'薄荷加柠檬的双重暴击，喝一口感觉自己嘴里开了空调。夏天续命必备。'},
+  {b:'益禾堂',n:'葡萄啵啵',e:'🌾',g:['紫色','夏夜','星辰','银河','唱片'],s:'五分糖',p:'正常冰',t:'葡萄果肉+啵啵+绿茶',r:'葡萄啵啵的重点在于啵啵——咬破的那一瞬间，像捏泡泡纸一样解压。',r2:'咬破啵啵的那一瞬间的满足感，约等于捏破一个泡泡纸。解压又好吃，双倍快乐。'},
+  {b:'茉莉奶白',n:'茉莉奶白',e:'🤍',g:['春风','白色','清冷','温柔','云朵'],s:'三分糖',p:'去冰',t:'茉莉花冻',r:'茉莉花七次窨制才配得上这杯奶白。简单纯粹，像你喜欢一个人刚开始的样子。',r2:'你喝到的每一口茉莉香，都是一朵花用尽一生的绽放。七次窨制，七次心动。'},
+  {b:'茉莉奶白',n:'桂花奶白',e:'🤍',g:['秋雨','暮色','释怀','怀念','清冷'],s:'五分糖',p:'温热',t:'桂花冻',r:'桂花是秋天写给冬天的情书。喝一口，想起了某年秋天的某个人。',r2:'桂花香是秋天的味道，牛奶是冬天的温暖。这杯喝下去，像秋天的尾巴扫过你的心。'},
+  {b:'茉莉奶白',n:'栀子奶白',e:'🤍',g:['夏夜','白色','温柔','浪漫','期许'],s:'三分糖',p:'去冰',t:'栀子花冻',r:'栀子花开的季节，适合喝这杯白色温柔。花香在嘴里散开的时候，你想起了谁的微笑。',r2:'栀子花的香气是夏天的限定记忆。喝这杯的时候，你的脑子里自动播放"栀子花开啊开"。'},
+  {b:'爷爷不泡茶',n:'桃桃乌龙',e:'👴',g:['春风','粉色','初恋','浪漫','午后'],s:'五分糖',p:'去冰',t:'蜜桃果肉+乌龙茶冻',r:'爷爷不泡茶但桃桃乌龙真的好喝。蜜桃味是少女心，乌龙茶是成年人的体面。',r2:'蜜桃是夏天的少女梦，乌龙是深秋的成熟心事。这一杯，从青涩喝到释然。'},
+  {b:'爷爷不泡茶',n:'荔枝冰酿',e:'👴',g:['夏夜','热烈','风铃','花海','单车'],s:'五分糖',p:'正常冰',t:'荔枝果肉+酒酿+脆波波',r:'荔枝的清甜加酒酿的微醺，像夏天晚上喝了点小酒在街上晃荡。快乐不过如此。',r2:'荔枝加酒酿等于微醺快乐水。喝完别开车，因为你可能会在红绿灯口跳起舞来。'},
+  {b:'爷爷不泡茶',n:'青提冰茶',e:'👴',g:['夏夜','微风','细雨','云朵','清冷'],s:'三分糖',p:'正常冰',t:'青提果肉+冻冻',r:'青提的颜色是夏天的滤镜，喝一口清新得像在空调房里啃青提。简单但停不下来。',r2:'青提绿色的样子就很夏天，喝起来更夏天。这杯茶的颜色比你的微信步数封面还好看。'},
+  {b:'爷爷不泡茶',n:'桂花酒酿奶茶',e:'👴',g:['秋雨','暮色','释怀','屋檐','篝火'],s:'五分糖',p:'温热',t:'桂花+酒酿+珍珠',r:'桂花香+酒酿微醺+奶茶暖胃，这杯喝完整个人像被秋天拥抱了一下。',r2:'桂花酒酿加奶茶的三重暴击——香、醉、暖。喝完想裹着毯子窝在沙发里看一部老电影。'},
+  {b:'瑞幸咖啡',n:'生椰拿铁',e:'🥥',g:['热烈','余晖','远方','帆船','海风'],s:'三分糖',p:'热饮',t:'椰奶冻',r:'生椰拿铁是打工人早上的第一口气。没有它，你老板可能会在会议上收获一个暴躁的你。',r2:'生椰拿铁是瑞幸的起死回生之作。当年要不是它，瑞幸可能还在卖咖啡。打工人感恩它。'},
+  {b:'瑞幸咖啡',n:'轻咖柠檬茶',e:'☕',g:['夏夜','微风','海风','午后','蝉鸣'],s:'三分糖',p:'少冰',t:'柠檬片+薄荷',r:'想喝咖啡又怕失眠？这杯就是瑞幸给你的温柔。低因、清爽、喝完照样睡得着。',r2:'低因咖啡是瑞幸给失眠人士的温柔。想喝咖啡又怕睡不着？选它，今晚不用数羊了。'},
+  {b:'瑞幸咖啡',n:'生酪拿铁',e:'☕',g:['热烈','余晖','重逢','远方','篝火'],s:'三分糖',p:'热饮',t:'芝士奶盖',r:'芝士就是力量——这句话在瑞幸这里是真的。生酪的咸香配上咖啡的苦，绝了。',r2:'生酪加咖啡听起来像黑暗料理，但喝起来真香。瑞幸的研发可能是米其林大厨转行的。'},
+  {b:'喜茶',n:'抹茶云顶椰椰蓝',e:'🧊',g:['蓝色','星辰','冰川','银河','极光'],s:'五分糖',p:'少冰',t:'抹茶云顶+椰奶冻+蓝藻',r:'蓝色分层美到舍不得喝。喝它之前先拍照，不然对不起它的颜值。',r2:'这杯的颜值高到可以参加选美。蓝色分层加抹茶云顶——它不是奶茶，是艺术品。'},
+  {b:'喜茶',n:'羽衣甘蓝活力茶',e:'🧊',g:['期许','远方','绿色','竹林','清冷'],s:'三分糖',p:'少冰',t:'羽衣甘蓝+奇亚籽+柠檬',r:'喝这杯的人大概在过一种"我很健康"的生活。羽衣甘蓝是健身人士的通行证。',r2:'喝完感觉自己在竹林里打太极。虽然你其实在工位上敲键盘，但至少心理上已经养生了。'},
+  {b:'奈雪的茶',n:'桑葚草莓魔法棒',e:'🌸',g:['紫色','粉色','月光','星辰','花海'],s:'七分糖',p:'少冰',t:'桑葚+草莓+酸奶+脆波波',r:'紫色和粉色的撞色像晚霞掉进了杯子里。桑葚暗黑但草莓甜美——这种反差萌谁懂？',r2:'像晚霞在杯子里打翻了调色盘。暗黑的桑葚和甜美的草莓告诉你：不完美才最迷人。'},
+  {b:'蜜雪冰城',n:'桑葚莓莓',e:'❄️',g:['紫色','粉色','花海','风铃','唱片'],s:'五分糖',p:'正常冰',t:'桑葚+草莓+绿茶',r:'桑葚是暗黑系的傲娇，草莓是甜妹，它俩加一起只要7块钱。蜜雪你是来报恩的吧？',r2:'7块钱买一杯桑葚草莓双拼，蜜雪冰城的定价像在做慈善。隔壁奶茶店哭了。'},
+  {b:'茶颜悦色',n:'乌龙茶冻',e:'🏮',g:['清冷','微风','云朵','释怀','竹林'],s:'无糖',p:'去冰',t:'乌龙茶冻',r:'无糖是对茶最好的尊重。这杯喝的不是奶茶，是修行。适合最近想出家的人。',r2:'无糖加纯茶，喝的是茶颜悦色最纯粹的味道。想出家的人可以先从这杯开始修行。'},
+  {b:'古茗',n:'生椰芋泥',e:'🍵',g:['冬雪','紫色','温柔','篝火','海风'],s:'五分糖',p:'温热',t:'芋泥+椰奶+脆波波',r:'芋泥和椰奶的CP感拉满。一个绵密一个清甜，像火锅和冰可乐一样搭。',r2:'芋泥加椰奶等于冬天的正确打开方式。绵密的芋泥配上清甜的椰奶，比男朋友的怀抱还暖。'},
+  {b:'CoCo都可',n:'柠檬椰椰',e:'🥥',g:['夏夜','白色','海风','帆船','微风'],s:'五分糖',p:'正常冰',t:'柠檬+椰水+冻冻',r:'柠檬的酸加上椰水的清甜，低卡又好喝。减脂期的姐妹喝它没有负罪感。',r2:'柠檬加椰水等于低卡快乐水。减脂期的姐妹喝它，喝完不用跑两公里赎罪。'},
+  {b:'一点点',n:'冻顶乌龙奶茶',e:'🟢',g:['冬雪','怀念','清冷','期许','篝火'],s:'五分糖',p:'温热',t:'珍珠',r:'冻顶乌龙是茶界的社恐——低调但有内涵。搭配鲜奶就是社恐找到了灵魂伴侣。',r2:'冻顶乌龙的醇厚像老朋友的拥抱，不热烈但踏实。冬天的下午，就差这一杯。'},
+  {b:'益禾堂',n:'杨梅冰沙',e:'🌾',g:['夏夜','落日','余晖','风铃','唱片'],s:'五分糖',p:'正常冰',t:'杨梅果肉+冰沙+冻冻',r:'杨梅的正确吃法：先做成果汁，再打成冰沙，最后"吸溜"一口。夏天就这样过吧。',r2:'杨梅冰沙喝起来像液态的杨梅——不对，它就是液态的杨梅。夏天来一杯，比吹风扇还爽。'},
+  {b:'沪上阿姨',n:'霸气桑葚',e:'👩',g:['紫色','夏夜','星辰','银河','唱片'],s:'五分糖',p:'少冰',t:'桑葚果肉+冻冻+脆波波',r:'桑葚看起来黑黑的像个反派，但喝起来甜得很。教你不要以貌取人。',r2:'桑葚是水果界的暗黑系美少女——看起来黑黑的，但喝起来甜得很。以貌取人会错过美味。'},
+  {b:'书亦烧仙草',n:'椰椰烧仙草',e:'🌿',g:['夏夜','白色','温柔','海风','怀念'],s:'五分糖',p:'少冰',t:'椰奶+仙草冻+脆波波',r:'烧仙草和椰奶的搭配像凉茶遇到了甜品——两个世界的和解，好喝就完事了。',r2:'烧仙草的微苦被椰奶的温柔接住，像所有不愉快的往事终于被理解。'},
+  {b:'茶百道',n:'超级杯水果茶',e:'🐼',g:['夏夜','热烈','落日','花海','帆船'],s:'五分糖',p:'少冰',t:'西瓜+芒果+柠檬+百香果+绿茶',r:'整整一升！不是杯子大，是格局大。一个人喝不完？那说明你需要个朋友。',r2:'整整一升的水果茶，拿在手里感觉自己是个饮水机。喝不完？找个人分享——这是社交利器。'},
+  {b:'霸王茶姬',n:'云中绿',e:'🏯',g:['云朵','清冷','微风','午后','竹林'],s:'三分糖',p:'去冰',t:'绿茶冻',r:'云中绿的名字就很仙。喝它的人大概是在修仙——不需要糖，只需要茶香。',r2:'云中绿喝起来像名字一样仙。适合在竹林里穿汉服喝——虽然你实际上在出租屋里穿睡衣喝。'},
+  {b:'奈雪的茶',n:'焦糖珍珠奶茶',e:'🌸',g:['冬雪','怀念','温柔','篝火','屋檐'],s:'七分糖',p:'热饮',t:'焦糖珍珠+鲜牛奶+奶盖',r:'焦糖的焦香是冬天里的一把火。珍珠的软糯是回归初心的温柔。喝它，回到爱喝奶茶的第一天。',r2:'焦糖的香是冬天的暖意，珍珠的糯是童年的记忆。喝这杯，回到你第一次喝奶茶的那个下午。'}
+];
+
+// 确保每个标签词至少被一款饮品覆盖
+var tagDrinkMap = {
+  '晚风':0,'微光':1,'初雪':85,'朝霞':1,'山川':84,'湖泊':30,'枫叶':5,'瀑布':70,'灯塔':44,'秋千':53,'信笺':58,'吉他':52,'相机':33,'油画':73,'烛台':9,'深爱':61,'炊烟':35,'霜叶':68,'余温':65,'潮汐':11,'晴空':66,'森林':84,'黑色':61
+};
+for (var tk in tagDrinkMap) {
+  var idx = tagDrinkMap[tk];
+  if (drinks[idx] && drinks[idx].g.indexOf(tk) === -1) {
+    drinks[idx].g.push(tk);
+  }
+}
+
+// ===== 品类卡通素材 =====
+var categoryImages = {
+  'fruit-tea': 'categories/cat-fruit-tea.png',
+  'yogurt': 'categories/cat-yogurt.png',
+  'milk-tea': 'categories/cat-milk-tea.png',
+  'coffee': 'categories/cat-coffee.png',
+  'tea': 'categories/cat-tea.png'
+};
+var picked = [];
+var round = 0;
+var currentWords = [];
+var hist = JSON.parse(localStorage.getItem('th3v2') || '[]');
+var heroCenteredSprites = ['dogs/p10.png','dogs/p11.png','dogs/p12.png','dogs/p13.png','dogs/p14.png','dogs/p5.png','dogs/p7.png'];
+var histSprites = ['dog-h1','dog-h2','dog-h3','dog-h4','dog-h5','dog-h6'];
+
+// 根据品牌和饮品名判断品类
+function getCategory(drink) {
+  var b = drink.b, n = drink.n;
+  // 咖啡
+  if (b === '瑞幸咖啡' || n.indexOf('拿铁') !== -1 || n.indexOf('咖啡') !== -1) return 'coffee';
+  // 酸奶奶昔类
+  if (['酸奶','奶昔','牛乳','绿豆沙','冰淇淋','冰沙','雪顶'].some(function(k) { return n.indexOf(k) !== -1; })) return 'yogurt';
+  if (n.indexOf('牛油果') !== -1) return 'yogurt';
+  // 果茶：含水果关键词（不看是否含"茶"）
+  var fruitKws = ['柠檬','葡萄','百香果','杨梅','西瓜','橙子','草莓','桑葚','蜜桃','芒果','荔枝','青提','红柚','椰椰','榴莲','菠萝','西柚','红柚','水蜜桃','水果','果茶','桃桃'];
+  var isFruit = fruitKws.some(function(k) { return n.indexOf(k) !== -1; });
+  if (isFruit) return 'fruit-tea';
+  // 纯茶：含"茶"不含"奶"
+  if (n.indexOf('茶') !== -1 && n.indexOf('奶') === -1 && n.indexOf('咖') === -1 && n.indexOf('拿铁') === -1) return 'tea';
+  return 'milk-tea';
+}
+var brandVisuals = {
+  '霸王茶姬': {logo:'brands/b-chagee.jpg', bg:'#17352b', fg:'#f6ead0', bd:'#17352b', ac:'rgba(23,53,43,.28)', rot:'-9deg'},
+  '喜茶': {logo:'brands/b-heytea.jpg', bg:'#111111', fg:'#ffffff', bd:'#111111', ac:'rgba(17,17,17,.24)', rot:'8deg'},
+  '沪上阿姨': {logo:'brands/b-hsayi.jpg', bg:'#7d6ba8', fg:'#ffffff', bd:'#7d6ba8', ac:'rgba(125,107,168,.26)', rot:'7deg'},
+  '蜜雪冰城': {logo:'brands/b-mixue.jpg', bg:'#e63a46', fg:'#ffffff', bd:'#d3313c', ac:'rgba(230,58,70,.22)', rot:'-8deg'},
+  '茶百道': {logo:'brands/b-chapanda.jpg', bg:'#f7f0dc', fg:'#7a5c2d', bd:'#dfcfac', ac:'rgba(223,207,172,.34)', rot:'7deg'},
+  '奈雪的茶': {logo:'brands/b-nayuki.jpg', bg:'#f6c8d7', fg:'#7a2f49', bd:'#e7b0c3', ac:'rgba(246,200,215,.42)', rot:'-7deg'},
+  '古茗': {logo:'brands/b-guming.jpg', bg:'#1e6b52', fg:'#ffffff', bd:'#1e6b52', ac:'rgba(30,107,82,.25)', rot:'8deg'},
+  '书亦烧仙草': {logo:'brands/b-shuyi.png', bg:'#2b6d4a', fg:'#ffffff', bd:'#2b6d4a', ac:'rgba(43,109,74,.24)', rot:'-10deg'},
+  'CoCo都可': {logo:'brands/b-coco.png', bg:'#6f4b34', fg:'#ffffff', bd:'#6f4b34', ac:'rgba(111,75,52,.26)', rot:'-6deg'},
+  '茶颜悦色': {logo:'brands/b-chayanyuese.jpg', bg:'#7a4833', fg:'#f9e8cc', bd:'#7a4833', ac:'rgba(122,72,51,.24)', rot:'9deg'},
+  '瑞幸咖啡': {logo:'brands/b-luckin.png', bg:'#184ea0', fg:'#ffffff', bd:'#184ea0', ac:'rgba(24,78,160,.22)', rot:'-9deg'},
+  '益禾堂': {logo:'brands/b-yihetang.png', bg:'#b8883a', fg:'#ffffff', bd:'#b8883a', ac:'rgba(184,136,58,.26)', rot:'8deg'},
+  '一点点': {logo:'brands/b-1dian.png', bg:'#3b7c4d', fg:'#ffffff', bd:'#3b7c4d', ac:'rgba(59,124,77,.24)', rot:'-7deg'},
+  '茉莉奶白': {logo:'brands/b-molly.jpg', bg:'#f4f1ea', fg:'#6c6052', bd:'#d8d0c2', ac:'rgba(216,208,194,.35)', rot:'-8deg'},
+  '爷爷不泡茶': {logo:'brands/b-yeye.jpg', bg:'#6f5e52', fg:'#fff6ec', bd:'#6f5e52', ac:'rgba(111,94,82,.22)', rot:'6deg'}
+};
+
+function spriteIndex(text, len) {
+  var n = 0;
+  for (var i = 0; i < text.length; i++) n += text.charCodeAt(i);
+  return n % len;
+}
+
+function pickRandom(arr, n, exclude) {
+  var pool = [];
+  for (var i = 0; i < arr.length; i++) {
+    if (exclude.indexOf(arr[i]) === -1) pool.push(arr[i]);
+  }
+  for (var i = pool.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  return pool.slice(0, n);
+}
+
+function renderWords() {
+  var exclude = picked.slice();
+  currentWords = pickRandom(allTags, 9, exclude);
+  var grid = document.getElementById('wordGrid');
+  var html = '';
+  for (var i = 0; i < currentWords.length; i++) {
+    html += '<div class="word dog-s' + ((i % 9) + 1) + '" data-w="' + currentWords[i] + '">' + currentWords[i] + '</div>';
+  }
+  grid.innerHTML = html;
+  var words = grid.querySelectorAll('.word');
+  for (var i = 0; i < words.length; i++) {
+    (function(idx, el) {
+      setTimeout(function() { el.classList.add('pop'); }, idx * 40);
+    })(i, words[i]);
+  }
+}
+
+function updateUI() {
+  for (var i = 1; i <= 3; i++) {
+    var s = document.getElementById('s' + i);
+    s.className = 'step';
+    if (i <= round) s.classList.add('done');
+    else if (i === round + 1) s.classList.add('cur');
+  }
+  var hint = document.getElementById('hint');
+  if (round === 0) hint.textContent = '第 1 轮：选一个你喜欢的词';
+  else if (round === 1) hint.textContent = '第 2 轮：再选一个词';
+  else if (round === 2) hint.textContent = '第 3 轮：最后一个词！';
+  var row = document.getElementById('selectedRow');
+  var html = '';
+  for (var i = 0; i < picked.length; i++) {
+    html += '<div class="selected-tag dog-p' + ((i % 3) + 1) + '"><span class="num">#' + (i+1) + '</span>' + picked[i] + '</div>';
+  }
+  row.innerHTML = html;
+}
+
+function match(tags) {
+  var scored = [];
+  for (var i = 0; i < drinks.length; i++) {
+    var d = drinks[i];
+    var hit = [];
+    var sc = 0;
+    for (var j = 0; j < tags.length; j++) {
+      if (d.g.indexOf(tags[j]) !== -1) { sc++; hit.push(tags[j]); }
+    }
+    var weight = sc > 0 ? sc * sc : 0;
+    scored.push({sc:sc, hit:hit, d:d, weight:weight});
+  }
+  if (Math.random() < 0.01) {
+    return {d:drinks[Math.floor(Math.random()*drinks.length)], hit:[]};
+  }
+  var totalW = 0;
+  for (var i = 0; i < scored.length; i++) totalW += scored[i].weight;
+  if (totalW === 0) return {d:drinks[Math.floor(Math.random()*drinks.length)], hit:[]};
+  var r = Math.random() * totalW;
+  for (var i = 0; i < scored.length; i++) {
+    r -= scored[i].weight;
+    if (r <= 0) return {sc:scored[i].sc, hit:scored[i].hit, d:scored[i].d};
+  }
+  return {d:drinks[Math.floor(Math.random()*drinks.length)], hit:[]};
+}
+
+function showResult(r) {
+  var bv = brandVisuals[r.d.b] || {logo:'brands/logo-1.png', bg:'#6f5e52', fg:'#fff6ec', bd:'#6f5e52', ac:'rgba(111,94,82,.22)', rot:'-8deg'};
+  var hero = document.getElementById('rIcon');
+  var heroDog = document.getElementById('dogHero');
+  var sticker = document.getElementById('rSticker');
+  hero.style.setProperty('--brand-aura', bv.ac);
+  hero.style.setProperty('--brand-ring', bv.bd);
+  heroDog.style.backgroundImage = 'url(' + heroCenteredSprites[Math.floor(Math.random() * heroCenteredSprites.length)] + ')';
+  var cat = getCategory(r.d);
+  sticker.style.borderColor = bv.bd;
+  sticker.style.background = '#fff';
+  sticker.style.transform = 'rotate(0deg)';
+  sticker.innerHTML = '<img class="sticker-logo" src="' + categoryImages[cat] + '" alt="' + cat + '">';
+  document.getElementById('rName').textContent = r.d.n;
+  document.getElementById('rBrand').innerHTML =
+    '<div class="brand-badge" style="border-color:'+bv.bd+'22;">' +
+    '<img class="badge-logo" src="' + bv.logo + '" alt="' + r.d.b + '">' +
+    '<span class="txt">'+r.d.b+'</span>' +
+    '</div>';
+  var th = '<span class="rt-sweet">甜度 '+r.d.s+'</span><span class="rt-temp">温度 '+r.d.p+'</span>';
+  if (r.d.t && r.d.t !== '无') th += '<span class="rt-top">加料 '+r.d.t+'</span>';
+  for (var i = 0; i < r.hit.length; i++) th += '<span class="rt-hit">灵感 '+r.hit[i]+'</span>';
+  document.getElementById('rTags').innerHTML = th;
+  document.getElementById('rReason').textContent = Math.random() < 0.5 ? r.d.r : r.d.r2;
+  var ff = ['今天也是被奶茶治愈的一天。','喝奶茶不会胖，喝的是快乐。','这杯茶里藏着一点点幸运。','喝完这杯，好事就慢慢靠近了。','今天的糖分刚好等于幸福指数。','这杯里有一点春天的味道。','今天也会是顺顺利利的一天。','喝一口，心情就松开了。','日子甜甜的，风也温柔。','这一杯，适合奖励认真生活的你。'];
+  document.getElementById('rFortune').textContent = ff[Math.floor(Math.random()*ff.length)];
+  document.getElementById('pickPhase').style.display = 'none';
+  var rp = document.getElementById('resultPhase');
+  rp.classList.remove('show');
+  void rp.offsetWidth;
+  rp.classList.add('show');
+  var now = new Date();
+  var ts = (now.getHours()<10?'0':'')+now.getHours()+':'+(now.getMinutes()<10?'0':'')+now.getMinutes();
+  hist.unshift({tags:picked.slice(), brand:r.d.b, name:r.d.n, emoji:r.d.e, time:ts});
+  if (hist.length > 10) hist = hist.slice(0,10);
+  localStorage.setItem('th3v2', JSON.stringify(hist));
+  drawHist();
+}
+
+// 开始页
+var splashDogs = ['dogs/p5.png','dogs/p7.png','dogs/p10.png','dogs/p11.png','dogs/p14.png'];
+document.getElementById('splashDog').src = splashDogs[Math.floor(Math.random() * splashDogs.length)];
+document.getElementById('splashBtn').addEventListener('click', function() {
+  var sp = document.getElementById('splashPhase');
+  sp.classList.add('splash-out');
+  setTimeout(function() {
+    sp.style.display = 'none';
+    document.getElementById('pickPhase').style.display = 'block';
+    renderWords();
+  }, 420);
+});
+
+document.getElementById('wordGrid').addEventListener('click', function(e) {
+  var el = e.target;
+  if (el.tagName !== 'DIV' || !el.classList.contains('word') || el.classList.contains('out')) return;
+  var w = el.getAttribute('data-w');
+  if (!w) return;
+  el.classList.remove('pop');
+  el.classList.add('chosen');
+  var all = this.querySelectorAll('.word');
+  for (var i = 0; i < all.length; i++) {
+    if (all[i] !== el) all[i].classList.add('out');
+  }
+  picked.push(w);
+  round++;
+  if (round >= 3) {
+    updateUI();
+    var grid = document.getElementById('wordGrid');
+    var dogs = heroCenteredSprites;
+    grid.innerHTML = '<div class="word-grid-dog" style="grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:16px;min-height:140px;padding:10px"><img src="' + dogs[Math.floor(Math.random() * dogs.length)] + '" style="max-width:80px;max-height:80px;object-fit:contain;opacity:0;animation:fadeIn .5s forwards" alt="🐕"><button id="goResultBtn" style="width:140px;padding:12px 16px;border:1.5px solid #3d2c1f;border-radius:14px 11px 16px 11px;background:#3d2c1f;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px rgba(61,44,31,.1);transition:all .25s;opacity:0;animation:fadeIn .5s .15s forwards">看看结果 →</button></div>';
+    document.getElementById('goResultBtn').addEventListener('click', function() {
+      var r = match(picked);
+      showResult(r);
+    });
+  } else {
+    setTimeout(function() {
+      updateUI();
+      renderWords();
+    }, 400);
+  }
+});
+
+document.getElementById('againBtn').addEventListener('click', function() {
+  picked = [];
+  round = 0;
+  document.getElementById('resultPhase').classList.remove('show');
+  document.getElementById('resultPhase').className = 'result';
+  document.getElementById('pickPhase').style.display = 'block';
+  updateUI();
+  renderWords();
+});
+
+function drawHist() {
+  var el = document.getElementById('histList');
+  if (hist.length === 0) { el.innerHTML = '<div class="empty">还没有记录~</div>'; return; }
+  var s = '';
+  for (var i = 0; i < hist.length; i++) {
+    var h = hist[i];
+    s += '<div class="hist-item"><div class="e ' + histSprites[spriteIndex((h.brand || "") + h.name + i, histSprites.length)] + '"></div><div class="i"><div class="n">'+h.name+'</div><div class="m">'+(h.brand||'')+' · '+(h.tags?h.tags.join(' '):'')+' · '+h.time+'</div></div></div>';
+  }
+  el.innerHTML = s;
+}
+drawHist();
+
+document.getElementById('rstBtn').onclick = function() {
+  if (hist.length === 0) return;
+  if (confirm('确定清空记录吗？')) { hist = []; localStorage.removeItem('th3v2'); drawHist(); }
+};
+
+updateUI();
+</script>
+</body>
+</html>
